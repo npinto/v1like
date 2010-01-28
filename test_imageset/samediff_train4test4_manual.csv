@@ -1,0 +1,16 @@
+cars/img001.jpg,cars/img002.jpg,same,train
+cars/img001.jpg,planes/img001.jpg,diff,train
+cars/img002.jpg,cars/img003.jpg,same,train
+cars/img002.jpg,planes/img002.jpg,diff,train
+planes/img003.jpg,planes/img004.jpg,same,train
+planes/img003.jpg,cars/img003.jpg,diff,train
+planes/img004.jpg,planes/img005.jpg,same,train
+planes/img004.jpg,cars/img004.jpg,diff,train
+cars/img005.jpg,cars/img006.jpg,same,test
+cars/img005.jpg,planes/img005.jpg,diff,test
+cars/img006.jpg,cars/img007.jpg,same,test
+cars/img006.jpg,planes/img006.jpg,diff,test
+planes/img007.jpg,planes/img008.jpg,same,test
+planes/img007.jpg,cars/img007.jpg,diff,test
+planes/img008.jpg,planes/img009.jpg,same,test
+planes/img008.jpg,cars/img008.jpg,diff,test

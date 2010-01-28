@@ -42,7 +42,8 @@ def v1like_extract_fromcsv(config_fname,
     assert(nprocessors >= 1)
 
     csvr = csv.reader(open(input_csv_fname))
-    fnames = [ row[0] for row in csvr ]
+    rows = [ row for row in csvr ]
+    fnames = sp.array([ row[:-2] for row in rows ]).ravel()
     #fnames.sort()
     sp.random.shuffle(fnames) # shuffle to enable multiple instances to run in //
     nfnames = len(fnames)
