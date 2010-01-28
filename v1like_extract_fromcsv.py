@@ -51,6 +51,7 @@ def v1like_extract_fromcsv(config_fname,
     widgets = [RotatingMarker(), " Progress: ", Percentage(), " ",
                Bar(left='[',right=']'), ' ', 
                " (", FilenameUpdate(fnames), ") ", ETA()]
+               #ETA()]
     pbar = ProgressBar(widgets=widgets, maxval=nfnames)
     
     # - should we use multiprocessing ?
