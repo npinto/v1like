@@ -469,8 +469,7 @@ def v1like_extract(config_fname,
         raise IOError("Error while saving '%s' (WRITE_RETRY=%d)"
                       % (output_fname, WRITE_RETRY))
 
-#-------------------------
-
+# -------------------------------------------------------------------------
 def main():
 
     import optparse
