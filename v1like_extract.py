@@ -444,17 +444,23 @@ def v1like_extract(config_fname,
     for i in xrange(WRITE_RETRY):
         if i > 0:
             print "Writing %s (retry %d)" % (output_fname, i)
+            
         io.savemat(output_fname,
                    out_dict,
                    format='4',
                    )
-        in_dict = io.loadmat(output_fname)
-        del in_dict['sha1']
-        del in_dict['__globals__']
-        sha1 = hashlib.sha1(cPickle.dumps(in_dict, 2)).hexdigest()
-        if sha1 == sha1_gt:
-            ok = True
-            break
+        try:
+            in_dict = io.loadmat(output_fname)
+            del in_dict['sha1']
+            del in_dict['__globals__']
+            sha1 = hashlib.sha1(cPickle.dumps(in_dict, 2)).hexdigest()
+            if sha1 == sha1_gt:
+                ok = True
+                break
+        except TypeError, err:
+            if err.message != "buffer is too small for requested array":
+                raise err
+            
         os.unlink(output_fname)
         import time
         time.sleep(.5)
