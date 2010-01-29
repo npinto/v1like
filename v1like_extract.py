@@ -451,8 +451,8 @@ def v1like_extract(config_fname,
                    )
         try:
             in_dict = io.loadmat(output_fname)
-            del in_dict['sha1']
-            del in_dict['__globals__']
+            del in_dict['sha1']            
+            in_dict.pop('__globals__', None)
             sha1 = hashlib.sha1(cPickle.dumps(in_dict, 2)).hexdigest()
             if sha1 == sha1_gt:
                 ok = True
