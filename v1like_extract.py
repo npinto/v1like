@@ -389,13 +389,13 @@ def v1like_fromfilename(config_fname,
         imgarr = get_image2(input_fname, resize=resize)
         
     try:
-        rep = v1like_fromarray(imgarr, rep, featsel)
+        fvector = v1like_fromarray(imgarr, rep, featsel)
     except MinMaxError, err:
         print err, "with", input_fname
         
     if verbose: print '*'*80
 
-    return rep
+    return fvector
     
 
 # -------------------------------------------------------------------------
