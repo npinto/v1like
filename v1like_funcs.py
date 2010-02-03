@@ -179,8 +179,9 @@ def v1like_norm2(hin, conv_mode, kshape, threshold):
 v1like_norm = v1like_norm2
 
 # -------------------------------------------------------------------------
+fft_cache = {}
+
 @clockit_onprofile(PROFILE)
-#@profile
 def v1like_filter(hin, conv_mode, filterbank):
     """ V1LIKE linear filtering
     Perform separable convolutions on an image with a set of filters
@@ -195,10 +196,6 @@ def v1like_filter(hin, conv_mode, filterbank):
               (width X height X n_filters)
 
     """
-
-    #print hin.shape
-    #hin = hin[1:230, 2:230]
-    #hin = N.randn(238, 318).astype('f')
 
     nfilters = len(filterbank)
 
@@ -225,16 +222,21 @@ def v1like_filter(hin, conv_mode, filterbank):
 
     for i in xrange(nfilters):
         filt = filterbank[i]
-        filt_fft = scipy.signal.fftn(filt, fft_shape)
+        
+        key = (filt.tostring(), tuple(fft_shape))
+        if key in fft_cache:
+            filt_fft = fft_cache[key]
+        else:            
+            filt_fft = scipy.signal.fftn(filt, fft_shape)
+            fft_cache[key] = filt_fft
+
         res_fft = scipy.signal.ifftn(hin_fft*filt_fft)
         res_fft = res_fft[begy:endy, begx:endx]
         hout_new[:,:,i] = res_fft
         
 
-    #assert(N.linalg.norm(hout_new-hout)==0)
     hout = hout_new
         
-
     return hout
 
 # -------------------------------------------------------------------------
