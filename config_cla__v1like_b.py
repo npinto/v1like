@@ -1,30 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-""" V1S Parameters module
+""" V1-like Parameters module
 
 This module describes a model where features from various intermediate
 representations are combined with the final outputs. 
 """
 
-import scipy as N
-
-# -- testing protocol
-protocol = {
-    # number of training examples
-    'ntrain':15,
-    # number of testing examples
-    'ntest':30,
-    # number of trials
-    'ntrials':10,
-    # random seed
-    'seed':1,
-    }
+import scipy as sp
 
 # -- representation 
 # some filter parameters
 norients = 16
-orients = [ o*N.pi/norients for o in xrange(norients) ]
+orients = [ o*sp.pi/norients for o in xrange(norients) ]
 divfreqs = [2, 3, 4, 6, 11, 18]
 freqs = [ 1./n for n in divfreqs ]
 phases = [0]

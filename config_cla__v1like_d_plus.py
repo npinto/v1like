@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-""" V1S Parameters module
+""" V1-like Parameters module
 
 This module provides parameters with which to build a simple V1-like model.
 In this parameter set, only the outputs of the model itself are included in
@@ -10,30 +10,19 @@ tricks' features described in the manuscript are used here)
  
 """
 
-import scipy as N
-
-# -- testing protocol
-protocol = {
-    # number of training examples
-    'ntrain':2,
-    # number of testing examples
-    'ntest':1,
-    # number of trials
-    'ntrials':1,
-    # random seed
-    'seed':1,
-    }
+import scipy as sp
 
 # -- representation 
 # some filter parameters
 norients = 36
-orients = [ o*N.pi/norients for o in xrange(norients) ]
+orients = [ o*sp.pi/norients for o in xrange(norients) ]
 #divfreqs = [2, 3, 4, 6, 11, 18, 23, 35]
 #In [33]: (arange(2,26)**(1.5)).astype(int)
 #Out[33]: 
 #array([  2,   5,   8,  11,  14,  18,  22,  27,  31,  36,  41,  46,  52,
 #        58,  64,  70,  76,  82,  89,  96, 103, 110, 117, 125])
-divfreqs = [  2,   5,   8,  11,  14,  18,  22,  27,  31,  36,  41,  46,  52,  58,  64,  70,  76,  82,  89,  96, 103, 110, 117, 125]
+divfreqs = [   2,  5,   8,  11,  14,  18,  22,  27,  31,  36,  41,  46,
+              52, 58,  64,  70,  76,  82,  89,  96, 103, 110, 117, 125]
 freqs = [ 1./n for n in divfreqs ]
 phases = [0]
 
