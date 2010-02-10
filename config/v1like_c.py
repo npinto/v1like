@@ -1,35 +1,28 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-""" V1-like Parameters module
+""" V1-like(C) Parameters module
 
-This module provides parameters with which to build a simple V1-like model.
-In this parameter set, only the outputs of the model itself are included in
-the feature vector which is subsequently classified (i.e. none of the 'easy
-tricks' features described in the manuscript are used here)
- 
+References:
+
+How far can you get with a modern face recognition test set using only simple features?
+IEEE Computer Vision and Pattern Recognition (CVPR 2009).
+Pinto N, DiCarlo JJ, Cox DD
+
 """
 
 import scipy as sp
 
 # -- representation 
 # some filter parameters
-norients = 36
+norients = 16
 orients = [ o*sp.pi/norients for o in xrange(norients) ]
-#divfreqs = [2, 3, 4, 6, 11, 18, 23, 35]
-#In [33]: (arange(2,26)**(1.5)).astype(int)
-#Out[33]: 
-#array([  2,   5,   8,  11,  14,  18,  22,  27,  31,  36,  41,  46,  52,
-#        58,  64,  70,  76,  82,  89,  96, 103, 110, 117, 125])
-divfreqs = [  2,   5,   8,  11,  14,  18,  22,  27,  31,  36,  41,  46,
-              52,  58,  64,  70,  76,  82,  89,  96, 103, 110, 117, 125]
+divfreqs = [2, 3, 4, 6, 11, 18, 23, 35]
 freqs = [ 1./n for n in divfreqs ]
 phases = [0]
 
 # dict with all representation parameters
 representation = {
-
-'color_space': 'gray',
 
 # - preprocessing
 # prepare images before processing
@@ -38,8 +31,6 @@ representation = {
     'max_edge': 150,
     # kernel size of the box low pass filter
     'lsum_ksize': None,
-    # whiten image 
-    'whiten': True,
     },
 
 # - input local normalization
@@ -55,7 +46,7 @@ representation = {
 # - linear filtering
 'filter': {
     # kernel shape of the gabors
-    'kshape': (125,125),
+    'kshape': (63,63),
     # list of orientations
     'orients': orients,
     # list of frequencies
@@ -114,4 +105,3 @@ featsel = {
 # -- model is a list of (representation, featureselection)
 # that will be combine resulting in the final feature vector
 model = [(representation, featsel)]
-

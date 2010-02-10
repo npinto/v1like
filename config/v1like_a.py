@@ -1,10 +1,22 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-""" V1-like Parameters module
+""" V1-like(A) Parameters module
 
-This module describes a model where features from various intermediate
-representations are combined with the final outputs. 
+References:
+
+How far can you get with a modern face recognition test set using only simple features?
+IEEE Computer Vision and Pattern Recognition (CVPR 2009).
+Pinto N, DiCarlo JJ, Cox DD
+
+Establishing Good Benchmarks and Baselines for Face Recognition.
+IEEE European Conference on Computer Vision (ECCV 2008)
+Pinto N, DiCarlo JJ, Cox DD
+
+Why is Real-World Visual Object Recognition Hard?
+PLoS Computational Biology 4(1): e27 doi:10.1371/journal.pcbi.0040027 (2008)
+Pinto N*, Cox DD*, DiCarlo JJ
+ 
 """
 
 import scipy as sp
@@ -20,22 +32,13 @@ phases = [0]
 # dict with all representation parameters
 representation = {
 
-'conv_mode' : 'same',
-
-'color_space': 'gray',
-
 # - preprocessing
 # prepare images before processing
 'preproc': {
-    # flip image?
-    'flip_lr': False,
-    'flip_ud': False,
     # resize input images by keeping aspect ratio and fix the biggest edge
     'max_edge': 150,
     # kernel size of the box low pass filter
     'lsum_ksize': 3,
-    # whiten image 
-    'whiten': True,
     },
 
 # - input local normalization
@@ -92,19 +95,19 @@ featsel = {
     'output': True,
 
     # Include grayscale values ? None or (height, width)    
-    'input_gray': (100,100),
+    'input_gray': None,
     # Include color histograms ? None or nbins per color
-    'input_colorhists': 255, 
+    'input_colorhists': None,
     # Include input norm histograms ? None or (division, nfeatures)    
     'normin_hists': None,
     # Include filter output histograms ? None or (division, nfeatures)
     'filter_hists': None,
     # Include activation output histograms ? None or (division, nfeatures)    
-    'activ_hists': (2,10000),
+    'activ_hists': None,
     # Include output norm histograms ? None or (division, nfeatures)
-    'normout_hists': (1,10000),
+    'normout_hists': None,
     # Include representation output histograms ? None or (division, nfeatures)
-    'pool_hists': (1,10000),
+    'pool_hists': None,
     }
 
 # -- model is a list of (representation, featureselection)

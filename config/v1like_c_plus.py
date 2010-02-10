@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-""" V1-like Parameters module
+""" V1-like(C)+ Parameters module
 
-This module provides parameters with which to build a simple V1-like model.
-In this parameter set, only the outputs of the model itself are included in
-the feature vector which is subsequently classified (i.e. none of the 'easy
-tricks' features described in the manuscript are used here)
- 
+References:
+
+How far can you get with a modern face recognition test set using only simple features?
+IEEE Computer Vision and Pattern Recognition (CVPR 2009).
+Pinto N, DiCarlo JJ, Cox DD
+
 """
 
 import scipy as sp
