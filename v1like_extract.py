@@ -121,9 +121,9 @@ def v1like_fromarray(arr, params, featsel):
     if orig_imga.ndim == 2 or orig_imga.shape[2] == 1:
         orig_imga_new = sp.empty(orig_imga.shape[:2] + (3,), dtype="float32")
         orig_imga.shape = orig_imga_new[:,:,0].shape
-        orig_imga_new[:,:,0] = orig_imga
-        orig_imga_new[:,:,1] = orig_imga
-        orig_imga_new[:,:,2] = orig_imga
+        orig_imga_new[:,:,0] = 0.2989*orig_imga
+        orig_imga_new[:,:,1] = 0.5870*orig_imga
+        orig_imga_new[:,:,2] = 0.1141*orig_imga
         orig_imga = orig_imga_new    
 
     # -
@@ -138,6 +138,8 @@ def v1like_fromarray(arr, params, featsel):
         orig_imga_conv.shape = orig_imga_conv.shape + (1,)
     elif params['color_space'] == 'opp':
         orig_imga_conv = colorconv.opp_convert(orig_imga)
+    elif params['color_space'] == 'oppnorm':
+        orig_imga_conv = colorconv.oppnorm_convert(orig_imga)
     elif params['color_space'] == 'chrom':
         orig_imga_conv = colorconv.chrom_convert(orig_imga)
 #     elif params['color_space'] == 'opponent':
@@ -383,11 +385,15 @@ def v1like_fromfilename(config_fname,
 
     if 'max_edge' in rep['preproc']:
         max_edge = rep['preproc']['max_edge']
-        imgarr = get_image(input_fname, max_edge=max_edge)
+        resize_method = rep['preproc']['resize_method']
+        imgarr = get_image(input_fname, max_edge=max_edge,
+                           resize_method=resize_method)
     else:
         resize = rep['preproc']['resize']
-        imgarr = get_image2(input_fname, resize=resize)
-        
+        resize_method = rep['preproc']['resize_method']        
+        imgarr = get_image2(input_fname, resize=resize,
+                            resize_method=resize_method)
+
     try:
         fvector = v1like_fromarray(imgarr, rep, featsel)
     except MinMaxError, err:

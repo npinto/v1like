@@ -39,6 +39,8 @@ representation = {
     'max_edge': 150,
     # kernel size of the box low pass filter
     'lsum_ksize': 3,
+    # how to resize the image
+    'resize_method': 'bicubic',            
     },
 
 # - input local normalization

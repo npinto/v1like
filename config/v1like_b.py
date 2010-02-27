@@ -35,6 +35,8 @@ representation = {
     'lsum_ksize': 3,
     # whiten image 
     'whiten': True,
+    # how to resize the image
+    'resize_method': 'bicubic',        
     },
 
 # - input local normalization

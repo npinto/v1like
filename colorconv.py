@@ -29,6 +29,32 @@ def opp_convert(arr):
     return out
 
 # ------------------------------------------------------------------------------
+def oppnorm_convert(arr, threshold=0.1):
+    #assert(arr.min()>=0 and arr.max()<=1)
+    #out = sp.empty_like(arr)
+    arr = arr.astype('float32')
+    out = sp.empty(arr.shape[:2]+(2,), dtype='float32')
+
+    print out.shape
+
+    # red-green
+    out[:,:,0] = arr[:,:,0] - arr[:,:,1]
+    # blue-yellow
+    out[:,:,1] = arr[:,:,2] - arr[:,:,[0,1]].min(2)
+    # intensity
+    denom = arr.max(2)
+
+    mask = denom < threshold#*denom[:,:,2].mean()
+    
+    out[:,:,0] /= denom    
+    out[:,:,1] /= denom
+
+    sp.putmask(out[:,:,0], mask, 0)
+    sp.putmask(out[:,:,1], mask, 0)
+
+    return out
+
+# ------------------------------------------------------------------------------
 def chrom_convert(arr):
     #assert(arr.min()>=0 and arr.max()<=1)
 
