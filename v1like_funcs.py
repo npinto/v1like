@@ -308,12 +308,15 @@ def sresample(src, outshape):
     
 # -------------------------------------------------------------------------
 @clockit_onprofile(PROFILE)
-def get_image(img_fname, max_edge=None, min_edge=None):
+def get_image(img_fname, max_edge=None, min_edge=None,
+              resize_method='bicubic'):
     """ Return a resized image as a numpy array
 
     Inputs:
       img_fname -- image filename
       max_edge -- maximum edge length (None = no resize)
+      min_edge -- minimum edge length (None = no resize)
+      resize_method -- 'antialias' or 'bicubic'
      
     Outputs:
       imga -- result
@@ -332,7 +335,12 @@ def get_image(img_fname, max_edge=None, min_edge=None):
         else:
             new_iw = int(round(1.* max_edge * iw/ih))
             new_ih = max_edge
-        img = img.resize((new_iw, new_ih), Image.BICUBIC)
+        if resize_method.lower() == 'bicubic':
+            img = img.resize((new_iw, new_ih), Image.BICUBIC)
+        elif resize_method.lower() == 'antialias':
+            img = img.resize((new_iw, new_ih), Image.ANTIALIAS)
+        else:
+            raise ValueError("resize_method '%s' not understood", resize_method)
 
     # -- convert to a numpy array
     imga = N.misc.fromimage(img)#/255.
@@ -383,7 +391,12 @@ def get_image2(img_fname, resize=None):
         else:
             raise ValueError, "resize parameter not understood"
 
-        img = img.resize((new_iw, new_ih), Image.BICUBIC)
+        if resize_method.lower() == 'bicubic':
+            img = img.resize((new_iw, new_ih), Image.BICUBIC)
+        elif resize_method.lower() == 'antialias':
+            img = img.resize((new_iw, new_ih), Image.ANTIALIAS)
+        else:
+            raise ValueError("resize_method '%s' not understood", resize_method)
 
     # -- convert to a numpy array
     imga = N.misc.fromimage(img)#/255.

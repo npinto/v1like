@@ -41,6 +41,8 @@ representation = {
     # magnitude threshold
     # if the vector's length is below, it doesn't get resized
     'threshold': 1.0,
+    # how to resize the image
+    'resize_method': 'bicubic',        
     },
 
 # - linear filtering
