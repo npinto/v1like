@@ -460,6 +460,9 @@ def v1like_extract(config_fname,
         except TypeError, err:
             if err.message != "buffer is too small for requested array":
                 raise err
+        except KeyError, err:
+            if err.message != "'sha1'":
+                raise err
             
         os.unlink(output_fname)
         import time
