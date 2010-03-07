@@ -103,7 +103,13 @@ def v1like_fromarray(arr, params, featsel):
 
     # use the first 3 channels only
     orig_imga = arr.astype("float32")[:,:,:3]
-    
+
+    # make sure that we don't have a 3-channel gray image
+    if orig_imga.shape[2] == 3 \
+           and (orig_imga[:,:,0]==orig_imga[:,:,1]).all() \
+           and (orig_imga[:,:,0]==orig_imga[:,:,2]).all():        
+        orig_imga = sp.atleast_3d(orig_imga[:,:,0])
+
     # rescale to [0,1]
     #print orig_imga.min(), orig_imga.max()
     if orig_imga.min() == orig_imga.max():
@@ -156,6 +162,8 @@ def v1like_fromarray(arr, params, featsel):
 
     for cidx in xrange(orig_imga_conv.shape[2]):
         imga0 = orig_imga_conv[:,:,cidx]
+
+        assert(imga0.min() != imga0.max())
 
         # -- 0. preprocessing
         #imga0 = imga0 / 255.0
