@@ -242,7 +242,7 @@ def v1like_filter(hin, conv_mode, filterbank):
 # -------------------------------------------------------------------------
 @clockit_onprofile(PROFILE)
 #@profile
-def v1like_pool(hin, conv_mode, lsum_ksize, outshape=None):
+def v1like_pool(hin, conv_mode, lsum_ksize, outshape=None, order=1):
     """ V1LIKE Pooling
     Boxcar Low-pass filter featuremap-wise
     
@@ -250,11 +250,15 @@ def v1like_pool(hin, conv_mode, lsum_ksize, outshape=None):
       hin -- a 3-dimensional array (width X height X n_channels)
       lsum_ksize -- kernel size of the local sum ex: 17
       outshape -- fixed output shape (2d slices)
+      order -- XXX
      
     Outputs:
        hout -- resulting 3-dimensional array
 
     """
+
+    order = float(order)
+    assert(order >= 1)
     
     # -- local sum
     if lsum_ksize is not None:
@@ -270,8 +274,11 @@ def v1like_pool(hin, conv_mode, lsum_ksize, outshape=None):
         krow = k1d[None,:]
         kcol = k1d[:,None]
         for d in xrange(aux.shape[2]):
-            aux[:,:,d] = conv(conv(hin[:,:,d], krow, conv_mode), kcol, conv_mode)
-            #aux[:,:,d] = conv(hin[:,:,d], k2d, conv_mode)
+            if order == 1:
+                aux[:,:,d] = conv(conv(hin[:,:,d], krow, conv_mode), kcol, conv_mode)
+            else:
+                aux[:,:,d] = conv(conv(hin[:,:,d]**order, krow, conv_mode), kcol, conv_mode)**(1./order)
+                
     else:
         aux = hin
 
