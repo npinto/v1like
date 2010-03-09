@@ -104,10 +104,11 @@ def v1like_fromarray(arr, params, featsel):
     # use the first 3 channels only
     orig_imga = arr.astype("float32")[:,:,:3]
 
-    # make sure that we don't have a 3-channel gray image
+    # make sure that we don't have a 3-channel (pseudo) gray image
     if orig_imga.shape[2] == 3 \
-           and (orig_imga[:,:,0]==orig_imga[:,:,1]).all() \
-           and (orig_imga[:,:,0]==orig_imga[:,:,2]).all():        
+            and (orig_imga[:,:,0]-orig_imga.mean(2) < 0.1*orig_imga.max()).all() \
+            and (orig_imga[:,:,1]-orig_imga.mean(2) < 0.1*orig_imga.max()).all() \
+            and (orig_imga[:,:,2]-orig_imga.mean(2) < 0.1*orig_imga.max()).all():
         orig_imga = sp.atleast_3d(orig_imga[:,:,0])
 
     # rescale to [0,1]
@@ -405,8 +406,10 @@ def v1like_fromfilename(config_fname,
     try:
         fvector = v1like_fromarray(imgarr, rep, featsel)
     except MinMaxError, err:
-        print err, "with", input_fname
-        
+        raise err, "with %s" % input_fname
+    except AssertionError, err:
+        raise err, "with %s" % input_fname
+
     if verbose: print '*'*80
 
     return fvector
