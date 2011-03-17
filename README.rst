@@ -16,19 +16,20 @@ http://www.ploscompbiol.org/article/info:doi/10.1371/journal.pcbi.0040027
 Instructions:
 -------------
 
-export PJT=$HOME/plos08_reprod
-export NPROCS=$(cat /proc/cpuinfo | grep processor | wc -l)
-mkdir -p $PJT/{src,data}
+.. raw:: bash
+    export PJT=$HOME/plos08_reprod
+    export NPROCS=$(cat /proc/cpuinfo | grep processor | wc -l)
+    mkdir -p $PJT/{src,data}
 
-# -- get v1like and sclas
-cd $PJT/src
-git clone https://github.com/npinto/v1like.git
-git clone https://github.com/npinto/sclas.git
-export V1LIKE=$PJT/src/v1like
-export SCLAS=$PJT/src/sclas
+    # -- get v1like and sclas
+    cd $PJT/src
+    git clone https://github.com/npinto/v1like.git
+    git clone https://github.com/npinto/sclas.git
+    export V1LIKE=$PJT/src/v1like
+    export SCLAS=$PJT/src/sclas
 
-# -- don't forget to install shogun
-# see e.g.: https://github.com/npinto/np-toolbox/blob/master/install_scripts/install_shogun0.9.3_Ubuntu9.10.bash
+    # -- don't forget to install shogun
+    # see e.g.: https://github.com/npinto/np-toolbox/blob/master/install_scripts/install_shogun0.9.3_Ubuntu9.10.bash
 
 # ----------------------------
 # -- Caltech101: get image set
@@ -61,7 +62,7 @@ done;
 
 # -- Caltech101: average classification results (crudely ;-)
 for i in `seq -w 1 10`; do
-    python $SCLAS/print_mat.py $PJT/data/101_ObjectCategories/train15test15_split_${i}.csv.svm_ova_results.$conf.mat accuracy;
+    python $SCLAS/print_mat.py $PJT/data/101_ObjectCategories/train${ntrain}test${ntest}_split_${i}.csv.svm_ova_results.$conf.mat accuracy;
 done | awk '{sum+=$2} END {print sum/NR}';
 # 57.8366
 
