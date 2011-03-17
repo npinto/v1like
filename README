@@ -16,11 +16,11 @@ http://www.ploscompbiol.org/article/info:doi/10.1371/journal.pcbi.0040027
 Instructions:
 -------------
 
+# -- set up
 export PJT=$HOME/plos08_reprod
 export NPROCS=$(cat /proc/cpuinfo | grep processor | wc -l)
 mkdir -p $PJT/{src,data}
 
-# -- get v1like and sclas
 cd $PJT/src
 git clone https://github.com/npinto/v1like.git
 git clone https://github.com/npinto/sclas.git
@@ -50,20 +50,27 @@ for conf in v1like_a{,_plus}; do
 done;
 
 # -- Caltech101: generate kernels
-for csv in $PJT/data/101_ObjectCategories/train${ntrain}test${ntest}_split_??.csv; do
-    python $SCLAS/kernel_generate_fromcsv.py -i $(dirname $csv) $csv $conf.mat $csv.kernel.$conf.mat;
+for conf in v1like_a{,_plus}; do
+    for csv in $PJT/data/101_ObjectCategories/train${ntrain}test${ntest}_split_??.csv; do
+        python $SCLAS/kernel_generate_fromcsv.py -i $(dirname $csv) $csv $conf.mat $csv.kernel.$conf.mat;
+    done;
 done;
 
 # -- Caltech101: run SVMs
-for csv in $PJT/data/101_ObjectCategories/train${ntrain}test${ntest}_split_??.csv; do
-    python $SCLAS/svm_ova_fromfilenames.py $csv.kernel.$conf.mat -o $csv.svm_ova_results.$conf.mat;
+for conf in v1like_a{,_plus}; do
+    for csv in $PJT/data/101_ObjectCategories/train${ntrain}test${ntest}_split_??.csv; do
+        python $SCLAS/svm_ova_fromfilenames.py $csv.kernel.$conf.mat -o $csv.svm_ova_results.$conf.mat;
+    done;
 done;
 
 # -- Caltech101: average classification results (crudely ;-)
-for i in `seq -w 1 10`; do
-    python $SCLAS/print_mat.py $PJT/data/101_ObjectCategories/train${ntrain}test${ntest}_split_${i}.csv.svm_ova_results.$conf.mat accuracy;
-done | awk '{sum+=$2} END {print sum/NR}';
-# 57.8366
+for conf in v1like_a{,_plus}; do
+    echo $conf;
+    for i in `seq -w 1 10`; do
+        python $SCLAS/print_mat.py $PJT/data/101_ObjectCategories/train${ntrain}test${ntest}_split_${i}.csv.svm_ova_results.$conf.mat accuracy;
+    done | awk '{sum+=$2} END {print sum/NR}';
+done;
+# v1like_a 57.8366
 
 # ----------------------------------------
 # -- Controlled Invariance: get image sets
@@ -73,25 +80,49 @@ md5sum -c PLoS08_ControlSet_Cars_Planes_v01.tar.gz.md5
 tar xzvf PLoS08_ControlSet_Cars_Planes_v01.tar.gz
 
 # -- Controlled Invariance: create splits
+export ntrain=100 ntest=30
 for dir in $(ls -d $PJT/data/PLoS08_ControlSet_Cars_Planes_v01/*/); do
     for i in `seq -w 1 10`; do
-        python $SCLAS/create_traintest_split.py --rseed=$i --ntrain=100 --ntest=30 $dir/{,train100test30_split_${i}.csv};
+        python $SCLAS/create_traintest_split.py --rseed=$i --ntrain=$ntrain --ntest=$ntest $dir/{,train${ntrain}test${ntest}_split_${i}.csv};
     done;
 done;
 
 # -- Controlled Invariance: generate v1like features
-export conf=v1like_a
-for i in `seq -w 1 10`; do python $V1LIKE/v1like_extract_fromcsv.py --nprocessors=$NPROCS -i $PJT/data/101_ObjectCategories/ $V1LIKE/config/$conf.py $PJT/data/101_ObjectCategories/train15test15_split_${i}.csv $conf.mat; done;
+for conf in v1like_a{,_plus}; do
+    for dir in $(ls -d $PJT/data/PLoS08_ControlSet_Cars_Planes_v01/*/); do
+        for i in `seq -w 1 10`; do
+            python $V1LIKE/v1like_extract_fromcsv.py --nprocessors=$NPROCS -i $dir/ $V1LIKE/config/$conf.py $dir/train${ntrain}test${ntest}_split_${i}.csv $conf.mat;
+        done;
+    done;
+done;
 
 # -- Controlled Invariance: generate kernels
-for csv in $PJT/data/101_ObjectCategories/train15test15_split_??.csv; do python $SCLAS/kernel_generate_fromcsv.py -i $(dirname $csv) $csv $conf.mat $csv.kernel.$conf.mat; done;
+for conf in v1like_a{,_plus}; do
+    for dir in $(ls -d $PJT/data/PLoS08_ControlSet_Cars_Planes_v01/*/); do
+        for csv in $dir/train${ntrain}test${ntest}_split_??.csv; do
+            python $SCLAS/kernel_generate_fromcsv.py -i $(dirname $csv) $csv $conf.mat $csv.kernel.$conf.mat;
+        done;
+    done;
+done;
 
 # -- Controlled Invariance: run SVMs
-for csv in $PJT/data/101_ObjectCategories/train15test15_split_??.csv; do python $SCLAS/svm_ova_fromfilenames.py $csv.kernel.$conf.mat -o $csv.svm_ova_results.$conf.mat; done;
+for conf in v1like_a{,_plus}; do
+    for dir in $(ls -d $PJT/data/PLoS08_ControlSet_Cars_Planes_v01/*/); do
+        for csv in $dir/train${ntrain}test${ntest}_split_??.csv; do
+            python $SCLAS/svm_ova_fromfilenames.py $csv.kernel.$conf.mat -o $csv.svm_ova_results.$conf.mat;
+        done;
+    done;
+done;
 
 # -- Controlled Invariance: average classification results (crudely ;-)
-for i in `seq -w 1 10`; do python $SCLAS/print_mat.py $PJT/data/101_ObjectCategories/train15test15_split_${i}.csv.svm_ova_results.$conf.mat accuracy; done | awk '{sum+=$2} END {print sum/NR}';
-# 57.8366
-
+for conf in v1like_a{,_plus}; do
+    for dir in $(ls -d $PJT/data/PLoS08_ControlSet_Cars_Planes_v01/*/); do
+        echo $conf $dir;
+        for i in `seq -w 1 10`; do
+            python $SCLAS/print_mat.py $dir/train${ntrain}test${ntest}_split_${i}.csv.svm_ova_results.$conf.mat accuracy;
+        done | awk '{sum+=$2} END {print sum/NR}';
+    done;
+done;
+# v1like_a 57.8366
 
 
