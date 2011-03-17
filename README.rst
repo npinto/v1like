@@ -4,4 +4,62 @@ Example of use:
 python v1like_extract_fromcsv.py -i ./test_imageset config/v1like_a.py ./test_imageset/train5test5_split01.csv .v1like_a  --nprocessors=$(cat /proc/cpuinfo | grep processor | wc -l)
 
 
+Steps to reproduce the results from our PLoS 2008 paper:
+========================================================
+
+"Why is Real-World Visual Object Recognition Hard?"
+By Nicolas Pinto, David D. Cox and James J. DiCarlo (2008)
+Published in PLoS Comput Biol 4(1): e27.
+doi:10.1371/journal.pcbi.0040027
+http://www.ploscompbiol.org/article/info:doi/10.1371/journal.pcbi.0040027
+
+Instructions:
+-------------
+
+export PJT=$HOME/plos08_reprod
+export NPROCS=$(cat /proc/cpuinfo | grep processor | wc -l)
+mkdir -p $PJT/{src,data}
+
+# -- get v1like and sclas
+cd $PJT/src
+git clone https://github.com/npinto/v1like.git
+git clone https://github.com/npinto/sclas.git
+export V1LIKE=$PJT/src/v1like
+export SCLAS=$PJT/src/sclas
+
+# -- don't forget to install shogun
+# see e.g.: https://github.com/npinto/np-toolbox/blob/master/install_scripts/install_shogun0.9.3_Ubuntu9.10.bash
+
+# ----------------------------
+# -- Caltech101: get image set
+cd $PJT/data
+wget http://www.vision.caltech.edu/Image_Datasets/Caltech101/101_ObjectCategories.tar.gz
+tar xzvf 101_ObjectCategories.tar.gz
+
+# -- Caltech101: create splits
+for i in `seq -w 1 10`; do python $SCLAS/create_traintest_split.py --rseed=$i --ntrain=15 --ntest=15 $PJT/data/101_ObjectCategories/{,train15test15_split_${i}.csv}; done;
+
+# -- Caltech101: generate v1like features
+export conf=v1like_a
+for i in `seq -w 1 10`; do python $V1LIKE/v1like_extract_fromcsv.py --nprocessors=$NPROCS -i $PJT/data/101_ObjectCategories/ $V1LIKE/config/$conf.py $PJT/data/101_ObjectCategories/train15test15_split_${i}.csv $conf.mat; done;
+
+# -- Caltech101: generate kernels
+for csv in $PJT/data/101_ObjectCategories/train15test15_split_??.csv; do python $SCLAS/kernel_generate_fromcsv.py -i $(dirname $csv) $csv $conf.mat $csv.kernel.$conf.mat; done;
+
+# -- Caltech101: run SVMs
+for csv in $PJT/data/101_ObjectCategories/train15test15_split_??.csv; do python $SCLAS/svm_ova_fromfilenames.py $csv.kernel.$conf.mat -o $csv.svm_ova_results.$conf.mat; done;
+
+# -- Caltech101: average classification results (crudely ;-)
+for i in `seq -w 1 10`; do python $SCLAS/print_mat.py $PJT/data/101_ObjectCategories/train15test15_split_${i}.csv.svm_ova_results.$conf.mat accuracy; done | awk '{sum+=$2} END {print sum/NR}';
+# 57.8366
+
+# ------------------------------
+# -- Controlled Invariance Sets:
+wget http://s3.amazonaws.com/PLoS08_ControlSets/PLoS08_ControlSet_Cars_Planes_v01.tar.gz http://s3.amazonaws.com/PLoS08_ControlSets/PLoS08_ControlSet_Cars_Planes_v01.tar.gz.md5
+md5sum -c PLoS08_ControlSet_Cars_Planes_v01.tar.gz.md5
+tar xzvf PLoS08_ControlSet_Cars_Planes_v01.tar.gz
+
+
+
+
 
