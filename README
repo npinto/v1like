@@ -70,7 +70,10 @@ for conf in v1like_a{,_plus}; do
         python $SCLAS/print_mat.py $PJT/data/101_ObjectCategories/train${ntrain}test${ntest}_split_${i}.csv.svm_ova_results.$conf.mat accuracy;
     done | awk '{sum+=$2} END {print sum/NR}';
 done;
-# v1like_a 57.8366
+# v1like_a
+# 58.0392
+# v1like_a_plus
+# 61.4183
 
 # ----------------------------------------
 # -- Controlled Invariance: get image sets
