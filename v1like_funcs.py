@@ -251,7 +251,7 @@ def v1like_filter(hin, conv_mode, filterbank):
 
         res_fft = scipy.signal.ifftn(hin_fft*filt_fft)
         res_fft = res_fft[begy:endy, begx:endx]
-        hout_new[:,:,i] = res_fft
+        hout_new[:,:,i] = N.real(res_fft)
         
 
     hout = hout_new
