@@ -1,0 +1,213 @@
+Example of use:
+===============
+
+python v1like_extract_fromcsv.py -i ./test_imageset config/v1like_a.py ./test_imageset/train5test5_split01.csv .v1like_a  --nprocessors=$(cat /proc/cpuinfo | grep processor | wc -l)
+
+
+Steps to reproduce the results from our PLoS 2008 paper:
+========================================================
+
+"Why is Real-World Visual Object Recognition Hard?"
+By Nicolas Pinto, David D. Cox and James J. DiCarlo (2008)
+Published in PLoS Comput Biol 4(1): e27.
+doi:10.1371/journal.pcbi.0040027
+http://www.ploscompbiol.org/article/info:doi/10.1371/journal.pcbi.0040027
+
+Instructions:
+-------------
+
+# -- set up
+export PJT=$HOME/plos08_reprod
+export NPROCS=$(cat /proc/cpuinfo | grep processor | wc -l)
+mkdir -p $PJT/{src,data}
+
+cd $PJT/src
+git clone https://github.com/npinto/v1like.git
+git clone https://github.com/npinto/sclas.git
+export V1LIKE=$PJT/src/v1like
+export SCLAS=$PJT/src/sclas
+
+# -- don't forget to install shogun
+# see e.g.: https://github.com/npinto/np-toolbox/blob/master/install_scripts/install_shogun0.9.3_Ubuntu9.10.bash
+
+# ----------------------------
+# -- #Caltech101: get image set
+cd $PJT/data
+wget http://www.vision.caltech.edu/Image_Datasets/#Caltech101/101_ObjectCategories.tar.gz
+tar xzvf 101_ObjectCategories.tar.gz
+
+# -- #Caltech101: create splits
+export ntrain=15 ntest=15
+for i in `seq -w 1 10`; do
+    python $SCLAS/create_traintest_split.py --rseed=$i --ntrain=$ntrain --ntest=$ntrain $PJT/data/101_ObjectCategories/{,train${ntrain}test${ntest}_split_${i}.csv};
+done;
+
+# -- #Caltech101: generate v1like features
+for conf in v1like_a{,_plus}; do
+    for i in `seq -w 1 10`; do
+        python $V1LIKE/v1like_extract_fromcsv.py --nprocessors=$NPROCS -i $PJT/data/101_ObjectCategories/ $V1LIKE/config/$conf.py $PJT/data/101_ObjectCategories/train${ntrain}test${ntest}_split_${i}.csv $conf.mat;
+    done;
+done;
+
+# -- #Caltech101: generate kernels
+for conf in v1like_a{,_plus}; do
+    for csv in $PJT/data/101_ObjectCategories/train${ntrain}test${ntest}_split_??.csv; do
+        python $SCLAS/kernel_generate_fromcsv.py -i $(dirname $csv) $csv $conf.mat $csv.kernel.$conf.mat;
+    done;
+done;
+
+# -- #Caltech101: run SVMs
+for conf in v1like_a{,_plus}; do
+    for csv in $PJT/data/101_ObjectCategories/train${ntrain}test${ntest}_split_??.csv; do
+        python $SCLAS/svm_ova_fromfilenames.py $csv.kernel.$conf.mat -o $csv.svm_ova_results.$conf.mat;
+    done;
+done;
+
+# -- #Caltech101: average classification results (crudely ;-)
+for conf in v1like_a{,_plus}; do
+    echo $conf;
+    for i in `seq -w 1 10`; do
+        python $SCLAS/print_mat.py $PJT/data/101_ObjectCategories/train${ntrain}test${ntest}_split_${i}.csv.svm_ova_results.$conf.mat accuracy;
+    done | awk '{sum+=$2} END {print sum/NR}';
+done;
+# v1like_a
+# 58.0392
+# v1like_a_plus
+# 61.4183
+
+# ----------------------------------------
+# -- Controlled Invariance: get image sets
+cd $PJT/data
+wget http://s3.amazonaws.com/PLoS08_ControlSets/PLoS08_ControlSet_Cars_Planes_v01.tar.gz http://s3.amazonaws.com/PLoS08_ControlSets/PLoS08_ControlSet_Cars_Planes_v01.tar.gz.md5
+md5sum -c PLoS08_ControlSet_Cars_Planes_v01.tar.gz.md5
+tar xzvf PLoS08_ControlSet_Cars_Planes_v01.tar.gz
+
+# -- Controlled Invariance: create splits
+export ntrain=100 ntest=30
+for dir in $(ls -d $PJT/data/PLoS08_ControlSet_Cars_Planes_v01/*/); do
+    for i in `seq -w 1 10`; do
+        python $SCLAS/create_traintest_split.py --rseed=$i --ntrain=$ntrain --ntest=$ntest $dir/{,train${ntrain}test${ntest}_split_${i}.csv};
+    done;
+done;
+
+# -- Controlled Invariance: generate v1like features
+for conf in v1like_a{,_plus}; do
+    for dir in $(ls -d $PJT/data/PLoS08_ControlSet_Cars_Planes_v01/*/); do
+        for i in `seq -w 1 10`; do
+            python $V1LIKE/v1like_extract_fromcsv.py --nprocessors=$NPROCS -i $dir/ $V1LIKE/config/$conf.py $dir/train${ntrain}test${ntest}_split_${i}.csv $conf.mat;
+        done;
+    done;
+done;
+
+# -- Controlled Invariance: generate kernels
+for conf in v1like_a{,_plus}; do
+    for dir in $(ls -d $PJT/data/PLoS08_ControlSet_Cars_Planes_v01/*/); do
+        for csv in $dir/train${ntrain}test${ntest}_split_??.csv; do
+            python $SCLAS/kernel_generate_fromcsv.py -i $(dirname $csv) $csv $conf.mat $csv.kernel.$conf.mat;
+        done;
+    done;
+done;
+
+# -- Controlled Invariance: run SVMs
+for conf in v1like_a{,_plus}; do
+    for dir in $(ls -d $PJT/data/PLoS08_ControlSet_Cars_Planes_v01/*/); do
+        for csv in $dir/train${ntrain}test${ntest}_split_??.csv; do
+            python $SCLAS/svm_ova_fromfilenames.py $csv.kernel.$conf.mat -o $csv.svm_ova_results.$conf.mat;
+        done;
+    done;
+done;
+
+# -- Controlled Invariance: average classification results (crudely ;-)
+for conf in v1like_a{,_plus}; do
+    for dir in $(ls -d $PJT/data/PLoS08_ControlSet_Cars_Planes_v01/*/); do
+        echo $conf $dir;
+        for i in `seq -w 1 10`; do
+            python $SCLAS/print_mat.py $dir/train${ntrain}test${ntest}_split_${i}.csv.svm_ova_results.$conf.mat accuracy;
+        done | awk '{sum+=$2} END {print sum/NR}';
+    done;
+done;
+#v1like_a plos08_reprod/data/PLoS08_ControlSet_Cars_Planes_v01/ControlSet_Cars_Planes_Variation00_NaturalBg_n130_200x200_GS/
+#97.1667
+#v1like_a plos08_reprod/data/PLoS08_ControlSet_Cars_Planes_v01/ControlSet_Cars_Planes_Variation00_NoiseBg_n130_200x200_GS/
+#100
+#v1like_a plos08_reprod/data/PLoS08_ControlSet_Cars_Planes_v01/ControlSet_Cars_Planes_Variation00_PhaseScrambledBg_n130_200x200_GS/
+#99.8333
+#v1like_a plos08_reprod/data/PLoS08_ControlSet_Cars_Planes_v01/ControlSet_Cars_Planes_Variation01_NaturalBg_n130_200x200_GS/
+#87.3333
+#v1like_a plos08_reprod/data/PLoS08_ControlSet_Cars_Planes_v01/ControlSet_Cars_Planes_Variation01_NoiseBg_n130_200x200_GS/
+#97.8333
+#v1like_a plos08_reprod/data/PLoS08_ControlSet_Cars_Planes_v01/ControlSet_Cars_Planes_Variation01_PhaseScrambledBg_n130_200x200_GS/
+#92.5
+#v1like_a plos08_reprod/data/PLoS08_ControlSet_Cars_Planes_v01/ControlSet_Cars_Planes_Variation02_NaturalBg_n130_200x200_GS/
+#68.3333
+#v1like_a plos08_reprod/data/PLoS08_ControlSet_Cars_Planes_v01/ControlSet_Cars_Planes_Variation02_NoiseBg_n130_200x200_GS/
+#84
+#v1like_a plos08_reprod/data/PLoS08_ControlSet_Cars_Planes_v01/ControlSet_Cars_Planes_Variation02_PhaseScrambledBg_n130_200x200_GS/
+#81.3333
+#v1like_a plos08_reprod/data/PLoS08_ControlSet_Cars_Planes_v01/ControlSet_Cars_Planes_Variation03_NaturalBg_n130_200x200_GS/
+#65.5
+#v1like_a plos08_reprod/data/PLoS08_ControlSet_Cars_Planes_v01/ControlSet_Cars_Planes_Variation03_NoiseBg_n130_200x200_GS/
+#74.1667
+#v1like_a plos08_reprod/data/PLoS08_ControlSet_Cars_Planes_v01/ControlSet_Cars_Planes_Variation03_PhaseScrambledBg_n130_200x200_GS/
+#65.6667
+#v1like_a plos08_reprod/data/PLoS08_ControlSet_Cars_Planes_v01/ControlSet_Cars_Planes_Variation04_NaturalBg_n130_200x200_GS/
+#54.8333
+#v1like_a plos08_reprod/data/PLoS08_ControlSet_Cars_Planes_v01/ControlSet_Cars_Planes_Variation04_NoiseBg_n130_200x200_GS/
+#68
+#v1like_a plos08_reprod/data/PLoS08_ControlSet_Cars_Planes_v01/ControlSet_Cars_Planes_Variation04_PhaseScrambledBg_n130_200x200_GS/
+#62.5
+#v1like_a plos08_reprod/data/PLoS08_ControlSet_Cars_Planes_v01/ControlSet_Cars_Planes_Variation05_NaturalBg_n130_200x200_GS/
+#51.3333
+#v1like_a plos08_reprod/data/PLoS08_ControlSet_Cars_Planes_v01/ControlSet_Cars_Planes_Variation05_NoiseBg_n130_200x200_GS/
+#61.8333
+#v1like_a plos08_reprod/data/PLoS08_ControlSet_Cars_Planes_v01/ControlSet_Cars_Planes_Variation05_PhaseScrambledBg_n130_200x200_GS/
+#57.5
+#v1like_a plos08_reprod/data/PLoS08_ControlSet_Cars_Planes_v01/ControlSet_Cars_Planes_Variation06_NaturalBg_n130_200x200_GS/
+#45.5
+#v1like_a plos08_reprod/data/PLoS08_ControlSet_Cars_Planes_v01/ControlSet_Cars_Planes_Variation06_NoiseBg_n130_200x200_GS/
+#55
+#v1like_a plos08_reprod/data/PLoS08_ControlSet_Cars_Planes_v01/ControlSet_Cars_Planes_Variation06_PhaseScrambledBg_n130_200x200_GS/
+#50.6667
+#v1like_a_plus plos08_reprod/data/PLoS08_ControlSet_Cars_Planes_v01/ControlSet_Cars_Planes_Variation00_NaturalBg_n130_200x200_GS/
+#97.3333
+#v1like_a_plus plos08_reprod/data/PLoS08_ControlSet_Cars_Planes_v01/ControlSet_Cars_Planes_Variation00_NoiseBg_n130_200x200_GS/
+#100
+#v1like_a_plus plos08_reprod/data/PLoS08_ControlSet_Cars_Planes_v01/ControlSet_Cars_Planes_Variation00_PhaseScrambledBg_n130_200x200_GS/
+#99.6667
+#v1like_a_plus plos08_reprod/data/PLoS08_ControlSet_Cars_Planes_v01/ControlSet_Cars_Planes_Variation01_NaturalBg_n130_200x200_GS/
+#86
+#v1like_a_plus plos08_reprod/data/PLoS08_ControlSet_Cars_Planes_v01/ControlSet_Cars_Planes_Variation01_NoiseBg_n130_200x200_GS/
+#98.3333
+#v1like_a_plus plos08_reprod/data/PLoS08_ControlSet_Cars_Planes_v01/ControlSet_Cars_Planes_Variation01_PhaseScrambledBg_n130_200x200_GS/
+#92.3333
+#v1like_a_plus plos08_reprod/data/PLoS08_ControlSet_Cars_Planes_v01/ControlSet_Cars_Planes_Variation02_NaturalBg_n130_200x200_GS/
+#67.1667
+#v1like_a_plus plos08_reprod/data/PLoS08_ControlSet_Cars_Planes_v01/ControlSet_Cars_Planes_Variation02_NoiseBg_n130_200x200_GS/
+#88.6667
+#v1like_a_plus plos08_reprod/data/PLoS08_ControlSet_Cars_Planes_v01/ControlSet_Cars_Planes_Variation02_PhaseScrambledBg_n130_200x200_GS/
+#80.6667
+#v1like_a_plus plos08_reprod/data/PLoS08_ControlSet_Cars_Planes_v01/ControlSet_Cars_Planes_Variation03_NaturalBg_n130_200x200_GS/
+#63.8333
+#v1like_a_plus plos08_reprod/data/PLoS08_ControlSet_Cars_Planes_v01/ControlSet_Cars_Planes_Variation03_NoiseBg_n130_200x200_GS/
+#78.5
+#v1like_a_plus plos08_reprod/data/PLoS08_ControlSet_Cars_Planes_v01/ControlSet_Cars_Planes_Variation03_PhaseScrambledBg_n130_200x200_GS/
+#69.1667
+#v1like_a_plus plos08_reprod/data/PLoS08_ControlSet_Cars_Planes_v01/ControlSet_Cars_Planes_Variation04_NaturalBg_n130_200x200_GS/
+#51.5
+#v1like_a_plus plos08_reprod/data/PLoS08_ControlSet_Cars_Planes_v01/ControlSet_Cars_Planes_Variation04_NoiseBg_n130_200x200_GS/
+#70.6667
+#v1like_a_plus plos08_reprod/data/PLoS08_ControlSet_Cars_Planes_v01/ControlSet_Cars_Planes_Variation04_PhaseScrambledBg_n130_200x200_GS/
+#64.5
+#v1like_a_plus plos08_reprod/data/PLoS08_ControlSet_Cars_Planes_v01/ControlSet_Cars_Planes_Variation05_NaturalBg_n130_200x200_GS/
+#51.1667
+#v1like_a_plus plos08_reprod/data/PLoS08_ControlSet_Cars_Planes_v01/ControlSet_Cars_Planes_Variation05_NoiseBg_n130_200x200_GS/
+#64.8333
+#v1like_a_plus plos08_reprod/data/PLoS08_ControlSet_Cars_Planes_v01/ControlSet_Cars_Planes_Variation05_PhaseScrambledBg_n130_200x200_GS/
+#58.1667
+#v1like_a_plus plos08_reprod/data/PLoS08_ControlSet_Cars_Planes_v01/ControlSet_Cars_Planes_Variation06_NaturalBg_n130_200x200_GS/
+#47
+#v1like_a_plus plos08_reprod/data/PLoS08_ControlSet_Cars_Planes_v01/ControlSet_Cars_Planes_Variation06_NoiseBg_n130_200x200_GS/
+#57.5
+#v1like_a_plus plos08_reprod/data/PLoS08_ControlSet_Cars_Planes_v01/ControlSet_Cars_Planes_Variation06_PhaseScrambledBg_n130_200x200_GS/
+#55.3333
+
