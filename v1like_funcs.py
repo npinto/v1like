@@ -140,7 +140,18 @@ def v1like_norm2(hin, conv_mode, kshape, threshold):
     #print time.time()-s
 
     #s = time.time()
-    hssq = conv(kerH, conv(kerW, conv(hsq, kerD, 'valid')[:,:,0].astype(dtype), conv_mode), conv_mode).astype(dtype)
+    hssq = conv(
+                conv(
+                     conv(hsq, kerD, 'valid')[:,:,0].astype(dtype),
+                     kerW,
+                     conv_mode),
+                kerH,
+                conv_mode).astype(dtype)
+    #hssq = conv(kerH,
+                #conv(kerW,
+                     #conv(hsq, kerD, 'valid')[:,:,0].astype(dtype),
+                     #conv_mode),
+                #conv_mode).astype(dtype)
     hssq = hssq[:,:,None]
     #print time.time()-s
 
@@ -151,12 +162,20 @@ def v1like_norm2(hin, conv_mode, kshape, threshold):
     hs = hout_h
     ws = hout_w
     #hsum = conv(hsrc, ker, conv_mode).astype(dtype)
-    hsum = conv(kerH, 
-                conv(kerW, 
+    hsum = conv(
+                conv(
                      conv(hsrc, 
                           kerD, 'valid')[:,:,0].astype(dtype), 
+                     kerW,
                      conv_mode),
+                kerH,
                 conv_mode).astype(dtype)
+    #hsum = conv(kerH, 
+                #conv(kerW, 
+                     #conv(hsrc, 
+                          #kerD, 'valid')[:,:,0].astype(dtype), 
+                     #conv_mode),
+                #conv_mode).astype(dtype)
     hsum = hsum[:,:,None]
     if conv_mode == 'same':
         hnum = hsrc - (hsum/size)
