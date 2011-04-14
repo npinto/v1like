@@ -3,7 +3,7 @@
 
 """ v1like_funcs module
 
-Key sub-operations performed in a simple V1-like model 
+Key sub-operations performed in a simple V1-like model
 (normalization, linear filtering, downsampling, etc.)
 
 """
@@ -24,23 +24,23 @@ PROFILE = False
 @clockit_onprofile(PROFILE)
 def v1like_norm(hin, conv_mode, kshape, threshold):
     """ V1S local normalization
-    
+
     Each pixel in the input image is divisively normalized by the L2 norm
     of the pixels in a local neighborhood around it, and the result of this
-    division is placed in the output image.   
-    
+    division is placed in the output image.
+
     Inputs:
       hin -- a 3-dimensional array (width X height X rgb)
-      kshape -- kernel shape (tuple) ex: (3,3) for a 3x3 normalization 
+      kshape -- kernel shape (tuple) ex: (3,3) for a 3x3 normalization
                 neighborhood
-      threshold -- magnitude threshold, if the vector's length is below 
-                   it doesn't get resized ex: 1.    
-     
+      threshold -- magnitude threshold, if the vector's length is below
+                   it doesn't get resized ex: 1.
+
     Outputs:
       hout -- a normalized 3-dimensional array (width X height X rgb)
-      
+
     """
-    
+
     eps = 1e-5
     kh, kw = kshape
     dtype = hin.dtype
@@ -50,13 +50,13 @@ def v1like_norm(hin, conv_mode, kshape, threshold):
     hin_h, hin_w, hin_d = hin.shape
     hout_h = hin_h - kh + 1
     hout_w = hin_w - kw + 1
-    hout_d = hin_d    
+    hout_d = hin_d
     hout = N.empty((hout_h, hout_w, hout_d), 'f')
 
     # -- compute numerator (hnum) and divisor (hdiv)
     # sum kernel
     hin_d = hin.shape[-1]
-    kshape3d = list(kshape) + [hin_d]            
+    kshape3d = list(kshape) + [hin_d]
     ker = N.ones(kshape3d, dtype=dtype)
     size = ker.size
 
@@ -80,30 +80,30 @@ def v1like_norm(hin, conv_mode, kshape, threshold):
     # 'volume' threshold
     N.putmask(hdiv, hdiv < (threshold+eps), 1.)
     result = (hnum / hdiv)
-    
+
     hout[:] = result
     return hout
 
 @clockit_onprofile(PROFILE)
 def v1like_norm2(hin, conv_mode, kshape, threshold):
     """ V1LIKE local normalization
-    
+
     Each pixel in the input image is divisively normalized by the L2 norm
     of the pixels in a local neighborhood around it, and the result of this
-    division is placed in the output image.   
-    
+    division is placed in the output image.
+
     Inputs:
       hin -- a 3-dimensional array (width X height X rgb)
-      kshape -- kernel shape (tuple) ex: (3,3) for a 3x3 normalization 
+      kshape -- kernel shape (tuple) ex: (3,3) for a 3x3 normalization
                 neighborhood
-      threshold -- magnitude threshold, if the vector's length is below 
-                   it doesn't get resized ex: 1.    
-     
+      threshold -- magnitude threshold, if the vector's length is below
+                   it doesn't get resized ex: 1.
+
     Outputs:
       hout -- a normalized 3-dimensional array (width X height X rgb)
-      
+
     """
-    
+
     eps = 1e-5
     kh, kw = kshape
     dtype = hin.dtype
@@ -117,14 +117,14 @@ def v1like_norm2(hin, conv_mode, kshape, threshold):
     if conv_mode != "same":
         hout_h = hout_h - kh + 1
         hout_w = hout_w - kw + 1
-        
-    hout_d = hin_d    
+
+    hout_d = hin_d
     hout = N.empty((hout_h, hout_w, hout_d), 'float32')
 
     # -- compute numerator (hnum) and divisor (hdiv)
     # sum kernel
     hin_d = hin.shape[-1]
-    kshape3d = list(kshape) + [hin_d]            
+    kshape3d = list(kshape) + [hin_d]
     ker = N.ones(kshape3d, dtype=dtype)
     size = ker.size
 
@@ -164,16 +164,16 @@ def v1like_norm2(hin, conv_mode, kshape, threshold):
     #hsum = conv(hsrc, ker, conv_mode).astype(dtype)
     hsum = conv(
                 conv(
-                     conv(hsrc, 
-                          kerD, 'valid')[:,:,0].astype(dtype), 
+                     conv(hsrc,
+                          kerD, 'valid')[:,:,0].astype(dtype),
                      kerW,
                      conv_mode),
                 kerH,
                 conv_mode).astype(dtype)
-    #hsum = conv(kerH, 
-                #conv(kerW, 
-                     #conv(hsrc, 
-                          #kerD, 'valid')[:,:,0].astype(dtype), 
+    #hsum = conv(kerH,
+                #conv(kerW,
+                     #conv(hsrc,
+                          #kerD, 'valid')[:,:,0].astype(dtype),
                      #conv_mode),
                 #conv_mode).astype(dtype)
     hsum = hsum[:,:,None]
@@ -189,7 +189,7 @@ def v1like_norm2(hin, conv_mode, kshape, threshold):
     # 'volume' threshold
     N.putmask(hdiv, hdiv < (threshold+eps), 1.)
     result = (hnum / hdiv)
-    
+
     #print result.shape
     hout[:] = result
     #print hout.shape, hout.dtype
@@ -204,14 +204,14 @@ fft_cache = {}
 def v1like_filter(hin, conv_mode, filterbank):
     """ V1LIKE linear filtering
     Perform separable convolutions on an image with a set of filters
-    
+
     Inputs:
-      hin -- input image (a 2-dimensional array) 
+      hin -- input image (a 2-dimensional array)
       filterbank -- TODO list of tuples with 1d filters (row, col)
                     used to perform separable convolution
-     
+
     Outputs:
-      hout -- a 3-dimensional array with outputs of the filters 
+      hout -- a 3-dimensional array with outputs of the filters
               (width X height X n_filters)
 
     """
@@ -224,14 +224,14 @@ def v1like_filter(hin, conv_mode, filterbank):
 
     if conv_mode == "valid":
         hout_shape = list( N.array(hin.shape[:2]) - N.array(filt0.shape[:2]) + 1 ) + [nfilters]
-        hout_new = N.empty(hout_shape, 'f')        
+        hout_new = N.empty(hout_shape, 'f')
         begy = filt0.shape[0]
         endy = begy + hout_shape[0]
         begx = filt0.shape[1]
         endx = begx + hout_shape[1]
     elif conv_mode == "same":
         hout_shape = hin.shape[:2] + (nfilters,)
-        hout_new = N.empty(hout_shape, 'f')        
+        hout_new = N.empty(hout_shape, 'f')
         begy = filt0.shape[0] / 2
         endy = begy + hout_shape[0]
         begx = filt0.shape[1] / 2
@@ -241,21 +241,21 @@ def v1like_filter(hin, conv_mode, filterbank):
 
     for i in xrange(nfilters):
         filt = filterbank[i]
-        
+
         key = (filt.tostring(), tuple(fft_shape))
         if key in fft_cache:
             filt_fft = fft_cache[key]
-        else:            
+        else:
             filt_fft = scipy.signal.fftn(filt, fft_shape)
             fft_cache[key] = filt_fft
 
         res_fft = scipy.signal.ifftn(hin_fft*filt_fft)
         res_fft = res_fft[begy:endy, begx:endx]
         hout_new[:,:,i] = N.real(res_fft)
-        
+
 
     hout = hout_new
-        
+
     return hout
 
 # -------------------------------------------------------------------------
@@ -264,13 +264,13 @@ def v1like_filter(hin, conv_mode, filterbank):
 def v1like_pool(hin, conv_mode, lsum_ksize, outshape=None, order=1):
     """ V1LIKE Pooling
     Boxcar Low-pass filter featuremap-wise
-    
+
     Inputs:
       hin -- a 3-dimensional array (width X height X n_channels)
       lsum_ksize -- kernel size of the local sum ex: 17
       outshape -- fixed output shape (2d slices)
       order -- XXX
-     
+
     Outputs:
        hout -- resulting 3-dimensional array
 
@@ -278,7 +278,7 @@ def v1like_pool(hin, conv_mode, lsum_ksize, outshape=None, order=1):
 
     order = float(order)
     assert(order >= 1)
-    
+
     # -- local sum
     if lsum_ksize is not None:
         hin_h, hin_w, hin_d = hin.shape
@@ -297,7 +297,7 @@ def v1like_pool(hin, conv_mode, lsum_ksize, outshape=None, order=1):
                 aux[:,:,d] = conv(conv(hin[:,:,d], krow, conv_mode), kcol, conv_mode)
             else:
                 aux[:,:,d] = conv(conv(hin[:,:,d]**order, krow, conv_mode), kcol, conv_mode)**(1./order)
-                
+
     else:
         aux = hin
 
@@ -306,7 +306,7 @@ def v1like_pool(hin, conv_mode, lsum_ksize, outshape=None, order=1):
         hout = aux
     else:
         hout = sresample(aux, outshape)
-        
+
     return hout
 
 # -------------------------------------------------------------------------
@@ -317,21 +317,21 @@ def sresample(src, outshape):
     Inputs:
       src -- a ndimensional array (dim>2)
       outshape -- fixed output shape for the first 2 dimensions
-     
+
     Outputs:
        hout -- resulting n-dimensional array
-    
+
     """
-    
+
     inh, inw = inshape = src.shape[:2]
     outh, outw = outshape
     hslice = (N.arange(outh) * (inh-1.)/(outh-1.)).round().astype(int)
     wslice = (N.arange(outw) * (inw-1.)/(outw-1.)).round().astype(int)
-    hout = src[hslice, :][:, wslice]    
+    hout = src[hslice, :][:, wslice]
     return hout.copy()
-    
-    
-    
+
+
+
 # -------------------------------------------------------------------------
 @clockit_onprofile(PROFILE)
 def get_image(img_fname, max_edge=None, min_edge=None,
@@ -343,12 +343,12 @@ def get_image(img_fname, max_edge=None, min_edge=None,
       max_edge -- maximum edge length (None = no resize)
       min_edge -- minimum edge length (None = no resize)
       resize_method -- 'antialias' or 'bicubic'
-     
+
     Outputs:
       imga -- result
-    
+
     """
-    
+
     # -- open image
     img = Image.open(img_fname)#.convert("RGB")
 
@@ -379,16 +379,16 @@ def get_image2(img_fname, resize=None):
 
     Inputs:
       img_fname -- image filename
-      resize -- tuple of (type, size) where type='min_edge' or 'max_edge' 
+      resize -- tuple of (type, size) where type='min_edge' or 'max_edge'
                 if None = no resize
-     
+
     Outputs:
       imga -- result
-    
+
     """
-    
+
     # -- open image
-    img = Image.open(img_fname)                
+    img = Image.open(img_fname)
 
     # -- resize image if needed
     if resize is not None:
@@ -413,7 +413,7 @@ def get_image2(img_fname, resize=None):
             else:
                 new_iw = int(round(1.* rsize * iw/ih))
                 new_ih = rsize
-        
+
         else:
             raise ValueError, "resize parameter not understood"
 
@@ -439,17 +439,17 @@ def rephists(hin, division, nfeatures):
     features that can be concatenated onto the V1-like output vector to
     increase performance with little additional complexity. These additional
     features are only used in the V1LIKE+ (i.e. + 'easy tricks') version of
-    the model. 
+    the model.
 
     Inputs:
       hin -- 3d image (width X height X n_channels)
       division -- granularity of the local histograms (e.g. 2 corresponds
                   to computing feature histograms in each quadrant)
-      nfeatures -- desired number of resulting features 
-     
+      nfeatures -- desired number of resulting features
+
     Outputs:
       fvector -- feature vector
-    
+
     """
 
     hin_h, hin_w, hin_d = hin.shape
@@ -466,6 +466,6 @@ def rephists(hin, division, nfeatures):
              ]
         hists += [h]
 
-    hists = N.array(hists, 'f').ravel()    
+    hists = N.array(hists, 'f').ravel()
     fvector[:hists.size] = hists
     return fvector
