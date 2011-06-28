@@ -24,7 +24,7 @@ mkdir -p $PJT/{src,data}
 cd $PJT/src
 git clone https://github.com/npinto/v1like.git
 git clone https://github.com/npinto/sclas.git
-export V1LIKE=$PJT/src/v1like
+export V1LIKE=$PJT/src/v1like/v1like
 export SCLAS=$PJT/src/sclas
 
 # -- don't forget to install shogun
