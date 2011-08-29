@@ -42,15 +42,15 @@ class MinMaxError(Exception): pass
 @clockit_onprofile(verbose)
 def v1like_fromarray(arr, params, featsel):
     """ Applies a simple V1-like model and generates a feature vector from
-    its outputs. 
+    its outputs.
 
     Inputs:
-      arr -- image's array 
+      arr -- image's array
       params -- representation parameters (dict)
       featsel -- features to include to the vector (dict)
 
     Outputs:
-      fvector -- corresponding feature vector                  
+      fvector -- corresponding feature vector
 
     """
 
@@ -64,21 +64,21 @@ def v1like_fromarray(arr, params, featsel):
     smallest_edge = min(arr.shape[:2])
 
     rep = params
-    
+
     preproc_lsum = rep['preproc']['lsum_ksize']
     if preproc_lsum is None:
         preproc_lsum = 1
     smallest_edge -= (preproc_lsum-1)
-            
+
     normin_kshape = rep['normin']['kshape']
     smallest_edge -= (normin_kshape[0]-1)
 
     filter_kshape = rep['filter']['kshape']
     smallest_edge -= (filter_kshape[0]-1)
-        
+
     normout_kshape = rep['normout']['kshape']
     smallest_edge -= (normout_kshape[0]-1)
-        
+
     pool_lsum = rep['pool']['lsum_ksize']
     smallest_edge -= (pool_lsum-1)
 
@@ -97,7 +97,7 @@ def v1like_fromarray(arr, params, featsel):
             raise
         else:
             pass
-    
+
     # TODO: finish image size adjustment
     assert min(arr.shape[:2]) > 0
 
@@ -118,7 +118,7 @@ def v1like_fromarray(arr, params, featsel):
                           "orig_imga.min() = %f, orig_imga.max() = %f"
                           % (orig_imga.min(), orig_imga.max())
                           )
-    
+
     orig_imga -= orig_imga.min()
     orig_imga /= orig_imga.max()
 
@@ -131,7 +131,7 @@ def v1like_fromarray(arr, params, featsel):
         orig_imga_new[:,:,0] = 0.2989*orig_imga
         orig_imga_new[:,:,1] = 0.5870*orig_imga
         orig_imga_new[:,:,2] = 0.1141*orig_imga
-        orig_imga = orig_imga_new    
+        orig_imga = orig_imga_new
 
     # -
     if params['color_space'] == 'rgb':
@@ -157,7 +157,7 @@ def v1like_fromarray(arr, params, featsel):
         orig_imga_conv = colorconv.hsv_convert(orig_imga)
     else:
         raise ValueError, "params['color_space'] not understood"
-    
+
     # -- process each map
     fvector_l = []
 
@@ -172,18 +172,18 @@ def v1like_fromarray(arr, params, featsel):
         # flip image ?
         if 'flip_lr' in params['preproc'] and params['preproc']['flip_lr']:
             imga0 = imga0[:,::-1]
-            
+
         if 'flip_ud' in params['preproc'] and params['preproc']['flip_ud']:
-            imga0 = imga0[::-1,:]            
+            imga0 = imga0[::-1,:]
 
         # smoothing
         lsum_ksize = params['preproc']['lsum_ksize']
         conv_mode = params['conv_mode']
         if lsum_ksize is not None:
-             k = sp.ones((lsum_ksize), 'f') / lsum_ksize             
-             imga0 = conv(conv(imga0, k[sp.newaxis,:], conv_mode), 
+             k = sp.ones((lsum_ksize), 'f') / lsum_ksize
+             imga0 = conv(conv(imga0, k[sp.newaxis,:], conv_mode),
                           k[:,sp.newaxis], conv_mode)
-             
+
         # whiten full image (assume True)
         if 'whiten' not in params['preproc'] or params['preproc']['whiten']:
             imga0 -= imga0.mean()
@@ -225,31 +225,31 @@ def v1like_fromarray(arr, params, featsel):
         # -- 7. handle features to include
         feat_l = []
 
-        # include input norm histograms ? 
+        # include input norm histograms ?
         f_normin_hists = featsel['normin_hists']
         if f_normin_hists is not None:
             division, nfeatures = f_norminhists
             feat_l += [rephists(imga1, division, nfeatures)]
 
-        # include filter output histograms ? 
+        # include filter output histograms ?
         f_filter_hists = featsel['filter_hists']
         if f_filter_hists is not None:
             division, nfeatures = f_filter_hists
             feat_l += [rephists(imga2, division, nfeatures)]
 
-        # include activation output histograms ?     
+        # include activation output histograms ?
         f_activ_hists = featsel['activ_hists']
         if f_activ_hists is not None:
             division, nfeatures = f_activ_hists
             feat_l += [rephists(imga3, division, nfeatures)]
 
-        # include output norm histograms ?     
+        # include output norm histograms ?
         f_normout_hists = featsel['normout_hists']
         if f_normout_hists is not None:
             division, nfeatures = f_normout_hists
             feat_l += [rephists(imga4, division, nfeatures)]
 
-        # include representation output histograms ? 
+        # include representation output histograms ?
         f_pool_hists = featsel['pool_hists']
         if f_pool_hists is not None:
             division, nfeatures = f_pool_hists
@@ -264,7 +264,7 @@ def v1like_fromarray(arr, params, featsel):
 
         fvector_l += [fvector]
 
-    # -- 
+    # --
 
     # include grayscale values ?
     f_input_gray = featsel['input_gray']
@@ -296,15 +296,15 @@ def v1like_fromarray(arr, params, featsel):
         #feat_l += [colorhists.ravel()]
         fvector_l += [colorhists.ravel()]
 
-    # -- done !    
+    # -- done !
     fvector_l = [fvector.ravel() for fvector in fvector_l]
     out = sp.concatenate(fvector_l).ravel()
     return out
-   
+
 # -------------------------------------------------------------------------
 def get_gabor_filters(params):
     """ Return a Gabor filterbank (generate it if needed)
-    
+
     Inputs:
     params -- filters parameters (dict)
 
@@ -312,7 +312,7 @@ def get_gabor_filters(params):
     filt_l -- filterbank (list)
 
     """
-        
+
     global filt_l
 
     if filt_l is not None:
@@ -328,7 +328,7 @@ def get_gabor_filters(params):
     xc = fw/2
     yc = fh/2
     filt_l = []
-    
+
     # -- build the filterbank
     for freq in freqs:
         for orient in orients:
@@ -338,14 +338,14 @@ def get_gabor_filters(params):
                                freq,orient,phase,
                                (fw,fh))
                 filt_l += [filt]
-                
+
     return filt_l
-       
+
 # -------------------------------------------------------------------------
 def v1like_fromfilename(config_fname,
                         input_fname,
                         ):
-    
+
     """ TODO """
 
     # -- get parameters
@@ -360,7 +360,7 @@ def v1like_fromfilename(config_fname,
         raise NotImplementedError
 
     rep, featsel = model[0]
-    if verbose: 
+    if verbose:
         print '*'*80
         pprint.pprint(rep)
 
@@ -373,7 +373,7 @@ def v1like_fromfilename(config_fname,
 
         preproc_lsum = rep['preproc']['lsum_ksize']
         new_max_edge += preproc_lsum-1
-            
+
         normin_kshape = rep['normin']['kshape']
         assert normin_kshape[0] == normin_kshape[1]
         new_max_edge += normin_kshape[0]-1
@@ -381,16 +381,16 @@ def v1like_fromfilename(config_fname,
         filter_kshape = rep['filter']['kshape']
         assert filter_kshape[0] == filter_kshape[1]
         new_max_edge += filter_kshape[0]-1
-        
+
         normout_kshape = rep['normout']['kshape']
         assert normout_kshape[0] == normout_kshape[1]
         new_max_edge += normout_kshape[0]-1
-        
+
         pool_lsum = rep['pool']['lsum_ksize']
         new_max_edge += pool_lsum-1
 
         rep['preproc']['max_edge'] = new_max_edge
-    
+
 
     if 'max_edge' in rep['preproc']:
         max_edge = rep['preproc']['max_edge']
@@ -399,7 +399,7 @@ def v1like_fromfilename(config_fname,
                            resize_method=resize_method)
     else:
         resize = rep['preproc']['resize']
-        resize_method = rep['preproc']['resize_method']        
+        resize_method = rep['preproc']['resize_method']
         imgarr = get_image2(input_fname, resize=resize,
                             resize_method=resize_method)
 
@@ -413,7 +413,7 @@ def v1like_fromfilename(config_fname,
     if verbose: print '*'*80
 
     return fvector
-    
+
 
 # -------------------------------------------------------------------------
 def v1like_extract(config_fname,
@@ -421,12 +421,12 @@ def v1like_extract(config_fname,
                    output_fname,
                    overwrite = DEFAULT_OVERWRITE,
                    ):
-    
+
     """ Extract v1-like features from an image """
 
     # add matlab's extension to the output filename if needed
     if path.splitext(output_fname)[-1] != ".mat":
-        output_fname += ".mat"        
+        output_fname += ".mat"
 
 #     lock_fname = output_fname + ".lock"
 
@@ -434,11 +434,11 @@ def v1like_extract(config_fname,
 #     if (path.exists(lock_fname) or path.exists(output_fname)) and not overwrite:
 #         warnings.warn("not allowed to overwrite %s"  % output_fname)
 #         return
-        
+
 #     # lock
 #     open(lock_fname, "w+")
 
-    # can we overwrite ?        
+    # can we overwrite ?
     if path.exists(output_fname) and not overwrite:
         warnings.warn("not allowed to overwrite %s"  % output_fname)
         return
@@ -461,14 +461,14 @@ def v1like_extract(config_fname,
     for i in xrange(WRITE_RETRY):
         if i > 0:
             print "Writing %s (retry %d)" % (output_fname, i)
-            
+
         io.savemat(output_fname,
                    out_dict,
                    format='4',
                    )
         try:
             in_dict = io.loadmat(output_fname)
-            del in_dict['sha1']            
+            del in_dict['sha1']
             in_dict.pop('__globals__', None)
             sha1 = hashlib.sha1(cPickle.dumps(in_dict, 2)).hexdigest()
             if sha1 == sha1_gt:
@@ -481,7 +481,7 @@ def v1like_extract(config_fname,
             #if err.message != "'sha1'":
             #    raise err
             pass
-            
+
         os.unlink(output_fname)
         import time
         time.sleep(.5)
@@ -496,10 +496,10 @@ def main():
     import optparse
 
     usage = "usage: %prog [options] <config_filename> <input_filename> <output_filename>"
-    
+
     parser = optparse.OptionParser(usage=usage)
-    
-    parser.add_option("--overwrite", 
+
+    parser.add_option("--overwrite",
                       default=DEFAULT_OVERWRITE,
                       action="store_true",
                       help="overwrite existing file [default=%default]")
@@ -517,7 +517,7 @@ def main():
         config_fname = args[0]
         input_fname = args[1]
         output_fname = args[2]
-        
+
         global verbose
         if opts.verbose:
             verbose = True
@@ -526,10 +526,10 @@ def main():
                        input_fname,
                        output_fname,
                        overwrite = opts.overwrite,
-                       )        
+                       )
 
 
 # --------------------------------
 if __name__ == "__main__":
     main()
-    
+
