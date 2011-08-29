@@ -454,8 +454,8 @@ def v1like_extract(config_fname,
         "shape": sp.array(fvector.shape, dtype='float32').reshape(1,-1)
         }
 
-    sha1_gt = hashlib.sha1(cPickle.dumps(out_dict, 2)).hexdigest()
-    out_dict['sha1'] = sha1_gt
+    #sha1_gt = hashlib.sha1(cPickle.dumps(out_dict, 2)).hexdigest()
+    #out_dict['sha1'] = sha1_gt
 
     ok = False
     for i in xrange(WRITE_RETRY):
@@ -468,12 +468,16 @@ def v1like_extract(config_fname,
                    )
         try:
             in_dict = io.loadmat(output_fname)
-            del in_dict['sha1']
-            in_dict.pop('__globals__', None)
-            sha1 = hashlib.sha1(cPickle.dumps(in_dict, 2)).hexdigest()
-            if sha1 == sha1_gt:
+            if ((in_dict['data'] == out_dict['data'])).all() and \
+               ((in_dict['shape'] == out_dict['shape'])).all():
                 ok = True
                 break
+            #del in_dict['sha1']
+            #in_dict.pop('__globals__', None)
+            #sha1 = hashlib.sha1(cPickle.dumps(in_dict, 2)).hexdigest()
+            #if sha1 == sha1_gt:
+                #ok = True
+                #break
         except TypeError, err:
             if err.message != "buffer is too small for requested array":
                 raise err
@@ -483,7 +487,6 @@ def v1like_extract(config_fname,
             pass
 
         os.unlink(output_fname)
-        import time
         time.sleep(.5)
 
     if not ok:
