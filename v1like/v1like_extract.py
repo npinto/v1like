@@ -40,7 +40,7 @@ class MinMaxError(Exception): pass
 
 # ------------------------------------------------------------------------------
 @clockit_onprofile(verbose)
-def v1like_fromarray(arr, params, featsel):
+def v1like_fromarray(arr, params, featsel, ravel_it=True):
     """ Applies a simple V1-like model and generates a feature vector from
     its outputs.
 
@@ -48,6 +48,7 @@ def v1like_fromarray(arr, params, featsel):
       arr -- image's array
       params -- representation parameters (dict)
       featsel -- features to include to the vector (dict)
+      ravel_it -- if True then the feature vector will be ravel'd (boolean)
 
     Outputs:
       fvector -- corresponding feature vector
@@ -228,7 +229,7 @@ def v1like_fromarray(arr, params, featsel):
         # include input norm histograms ?
         f_normin_hists = featsel['normin_hists']
         if f_normin_hists is not None:
-            division, nfeatures = f_norminhists
+            division, nfeatures = f_normin_hists
             feat_l += [rephists(imga1, division, nfeatures)]
 
         # include filter output histograms ?
@@ -297,7 +298,10 @@ def v1like_fromarray(arr, params, featsel):
         fvector_l += [colorhists.ravel()]
 
     # -- done !
-    fvector_l = [fvector.ravel() for fvector in fvector_l]
+    if ravel_it:
+        fvector_l = [fvector.ravel() for fvector in fvector_l]
+    else:
+        fvector_l = [fvector for fvector in fvector_l]
     out = sp.concatenate(fvector_l).ravel()
     return out
 
