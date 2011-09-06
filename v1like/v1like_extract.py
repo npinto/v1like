@@ -80,8 +80,9 @@ def v1like_fromarray(arr, params, featsel, ravel_it=True):
     normout_kshape = rep['normout']['kshape']
     smallest_edge -= (normout_kshape[0]-1)
 
-    pool_lsum = rep['pool']['lsum_ksize']
-    smallest_edge -= (pool_lsum-1)
+    if 'lsum_ksize' in rep['pool']:
+        pool_lsum = rep['pool']['lsum_ksize']
+        smallest_edge -= (pool_lsum-1)
 
     arrh, arrw, _ = arr.shape
 
@@ -300,9 +301,10 @@ def v1like_fromarray(arr, params, featsel, ravel_it=True):
     # -- done !
     if ravel_it:
         fvector_l = [fvector.ravel() for fvector in fvector_l]
+        out = sp.concatenate(fvector_l).ravel()
     else:
         fvector_l = [fvector for fvector in fvector_l]
-    out = sp.concatenate(fvector_l).ravel()
+        out = sp.concatenate(fvector_l)
     return out
 
 # -------------------------------------------------------------------------
