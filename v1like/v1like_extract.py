@@ -66,10 +66,11 @@ def v1like_fromarray(arr, params, featsel, ravel_it=True):
 
     rep = params
 
-    preproc_lsum = rep['preproc']['lsum_ksize']
-    if preproc_lsum is None:
-        preproc_lsum = 1
-    smallest_edge -= (preproc_lsum-1)
+    if 'preproc' in rep:
+        preproc_lsum = rep['preproc']['lsum_ksize']
+        if preproc_lsum is None:
+            preproc_lsum = 1
+        smallest_edge -= (preproc_lsum-1)
 
     normin_kshape = rep['normin']['kshape']
     smallest_edge -= (normin_kshape[0]-1)
@@ -170,27 +171,28 @@ def v1like_fromarray(arr, params, featsel, ravel_it=True):
 
         # -- 0. preprocessing
         #imga0 = imga0 / 255.0
+        conv_mode = params['conv_mode']
 
         # flip image ?
-        if 'flip_lr' in params['preproc'] and params['preproc']['flip_lr']:
-            imga0 = imga0[:,::-1]
+        if 'preproc' in params:
+            if 'flip_lr' in params['preproc'] and params['preproc']['flip_lr']:
+                imga0 = imga0[:,::-1]
 
-        if 'flip_ud' in params['preproc'] and params['preproc']['flip_ud']:
-            imga0 = imga0[::-1,:]
+            if 'flip_ud' in params['preproc'] and params['preproc']['flip_ud']:
+                imga0 = imga0[::-1,:]
 
-        # smoothing
-        lsum_ksize = params['preproc']['lsum_ksize']
-        conv_mode = params['conv_mode']
-        if lsum_ksize is not None:
-             k = sp.ones((lsum_ksize), 'f') / lsum_ksize
-             imga0 = conv(conv(imga0, k[sp.newaxis,:], conv_mode),
-                          k[:,sp.newaxis], conv_mode)
+            # smoothing
+            lsum_ksize = params['preproc']['lsum_ksize']
+            if lsum_ksize is not None:
+                 k = sp.ones((lsum_ksize), 'f') / lsum_ksize
+                 imga0 = conv(conv(imga0, k[sp.newaxis,:], conv_mode),
+                              k[:,sp.newaxis], conv_mode)
 
-        # whiten full image (assume True)
-        if 'whiten' not in params['preproc'] or params['preproc']['whiten']:
-            imga0 -= imga0.mean()
-            if imga0.std() != 0:
-                imga0 /= imga0.std()
+            # whiten full image (assume True)
+            if 'whiten' not in params['preproc'] or params['preproc']['whiten']:
+                imga0 -= imga0.mean()
+                if imga0.std() != 0:
+                    imga0 /= imga0.std()
 
         # -- 1. input normalization
         imga1 = v1like_norm(imga0[:,:,sp.newaxis], conv_mode, **params['normin'])

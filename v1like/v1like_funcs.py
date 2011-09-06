@@ -265,7 +265,7 @@ def v1like_filter(hin, conv_mode, filterbank, use_cache=False):
 # -------------------------------------------------------------------------
 @clockit_onprofile(PROFILE)
 #@profile
-def v1like_pool(hin, conv_mode, lsum_ksize, outshape=None, order=1):
+def v1like_pool(hin, conv_mode, lsum_ksize=None, outshape=None, order=1):
     """ V1LIKE Pooling
     Boxcar Low-pass filter featuremap-wise
 
