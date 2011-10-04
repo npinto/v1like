@@ -40,7 +40,7 @@ class MinMaxError(Exception): pass
 
 # ------------------------------------------------------------------------------
 @clockit_onprofile(verbose)
-def v1like_fromarray(arr, params, featsel, ravel_it=True):
+def v1like_fromarray(arr, params, featsel, ravel_it=True, use_fft_cache=False):
     """ Applies a simple V1-like model and generates a feature vector from
     its outputs.
 
@@ -49,6 +49,8 @@ def v1like_fromarray(arr, params, featsel, ravel_it=True):
       params -- representation parameters (dict)
       featsel -- features to include to the vector (dict)
       ravel_it -- if True then the feature vector will be ravel'd (boolean)
+      use_fft_cache -- if True then v1like_filter() will use a cache for
+      precomputed filters fft
 
     Outputs:
       fvector -- corresponding feature vector
@@ -200,7 +202,7 @@ def v1like_fromarray(arr, params, featsel, ravel_it=True):
 
         # -- 2. linear filtering
         filt_l = get_gabor_filters(params['filter'])
-        imga2 = v1like_filter(imga1[:,:,0], conv_mode, filt_l)
+        imga2 = v1like_filter(imga1[:,:,0], conv_mode, filt_l, use_fft_cache=use_fft_cache)
         #print imga2.shape
 
         #raise

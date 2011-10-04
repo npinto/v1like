@@ -201,16 +201,16 @@ v1like_norm = v1like_norm2
 fft_cache = {}
 
 @clockit_onprofile(PROFILE)
-def v1like_filter(hin, conv_mode, filterbank, use_cache=False):
+def v1like_filter(hin, conv_mode, filterbank, use_fft_cache=False):
     """ V1LIKE linear filtering
     Perform separable convolutions on an image with a set of filters
 
     Inputs:
       hin -- input image (a 2-dimensional array)
-      filterbank -- TODO list of tuples with 1d filters (row, col)
+      filterbank -- FIXME list of tuples with 1d filters (row, col)
                     used to perform separable convolution
-      use_cache -- Boolean, use internal fft_cache (works _well_ if the input
-      shapes don't vary much, otherwise you'll blow away the memory)
+      use_fft_cache -- Boolean, use internal fft_cache (works _well_ if the
+      input shapes don't vary much, otherwise you'll blow away the memory)
 
     Outputs:
       hout -- a 3-dimensional array with outputs of the filters
@@ -244,7 +244,7 @@ def v1like_filter(hin, conv_mode, filterbank, use_cache=False):
     for i in xrange(nfilters):
         filt = filterbank[i]
 
-        if use_cache:
+        if use_fft_cache:
             key = (filt.tostring(), tuple(fft_shape))
             if key in fft_cache:
                 filt_fft = fft_cache[key]
