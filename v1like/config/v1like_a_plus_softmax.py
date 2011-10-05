@@ -21,7 +21,7 @@ Pinto N*, Cox DD*, DiCarlo JJ
 
 import scipy as sp
 
-# -- representation 
+# -- representation
 # some filter parameters
 norients = 16
 orients = [ o*sp.pi/norients for o in xrange(norients) ]
@@ -46,10 +46,10 @@ representation = {
     'max_edge': 150,
     # kernel size of the box low pass filter
     'lsum_ksize': 3,
-    # whiten image 
+    # whiten image
     'whiten': True,
     # how to resize the image
-    'resize_method': 'bicubic',    
+    'resize_method': 'bicubic',
     },
 
 # - input local normalization
@@ -107,15 +107,15 @@ featsel = {
     # Include representation output ? True or False
     'output': True,
 
-    # Include grayscale values ? None or (height, width)    
+    # Include grayscale values ? None or (height, width)
     'input_gray': (100,100),
     # Include color histograms ? None or nbins per color
-    'input_colorhists': 255, 
-    # Include input norm histograms ? None or (division, nfeatures)    
+    'input_colorhists': 255,
+    # Include input norm histograms ? None or (division, nfeatures)
     'normin_hists': None,
     # Include filter output histograms ? None or (division, nfeatures)
     'filter_hists': None,
-    # Include activation output histograms ? None or (division, nfeatures)    
+    # Include activation output histograms ? None or (division, nfeatures)
     'activ_hists': (2,10000),
     # Include output norm histograms ? None or (division, nfeatures)
     'normout_hists': (1,10000),

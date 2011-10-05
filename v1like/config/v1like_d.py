@@ -13,13 +13,13 @@ Pinto N, DiCarlo JJ, Cox DD
 
 import scipy as sp
 
-# -- representation 
+# -- representation
 # some filter parameters
 norients = 36
 orients = [ o*sp.pi/norients for o in xrange(norients) ]
 #divfreqs = [2, 3, 4, 6, 11, 18, 23, 35]
 #In [33]: (arange(2,26)**(1.5)).astype(int)
-#Out[33]: 
+#Out[33]:
 #array([  2,   5,   8,  11,  14,  18,  22,  27,  31,  36,  41,  46,  52,
 #        58,  64,  70,  76,  82,  89,  96, 103, 110, 117, 125])
 divfreqs = [  2,   5,   8,  11,  14,  18,  22,  27,  31,  36,  41,  46,
@@ -39,10 +39,10 @@ representation = {
     'max_edge': 150,
     # kernel size of the box low pass filter
     'lsum_ksize': None,
-    # whiten image 
+    # whiten image
     'whiten': True,
     # how to resize the image
-    'resize_method': 'bicubic',        
+    'resize_method': 'bicubic',
     },
 
 # - input local normalization
@@ -98,15 +98,15 @@ featsel = {
     # Include representation output ? True or False
     'output': True,
 
-    # Include grayscale values ? None or (height, width)    
+    # Include grayscale values ? None or (height, width)
     'input_gray': None,#(100,100),
     # Include color histograms ? None or nbins per color
-    'input_colorhists': None,#255, 
-    # Include input norm histograms ? None or (division, nfeatures)    
+    'input_colorhists': None,#255,
+    # Include input norm histograms ? None or (division, nfeatures)
     'normin_hists': None,
     # Include filter output histograms ? None or (division, nfeatures)
     'filter_hists': None,
-    # Include activation output histograms ? None or (division, nfeatures)    
+    # Include activation output histograms ? None or (division, nfeatures)
     'activ_hists': None,#(2,10000),
     # Include output norm histograms ? None or (division, nfeatures)
     'normout_hists': None,#(1,10000),

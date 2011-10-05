@@ -16,12 +16,12 @@ Pinto N, DiCarlo JJ, Cox DD
 Why is Real-World Visual Object Recognition Hard?
 PLoS Computational Biology 4(1): e27 doi:10.1371/journal.pcbi.0040027 (2008)
 Pinto N*, Cox DD*, DiCarlo JJ
- 
+
 """
 
 import scipy as sp
 
-# -- representation 
+# -- representation
 # some filter parameters
 norients = 16
 orients = [ o*sp.pi/norients for o in xrange(norients) ]
@@ -45,7 +45,7 @@ representation = {
     # kernel size of the box low pass filter
     'lsum_ksize': 3,
     # how to resize the image
-    'resize_method': 'bicubic',            
+    'resize_method': 'bicubic',
     },
 
 # - input local normalization
@@ -101,15 +101,15 @@ featsel = {
     # Include representation output ? True or False
     'output': True,
 
-    # Include grayscale values ? None or (height, width)    
+    # Include grayscale values ? None or (height, width)
     'input_gray': None,
     # Include color histograms ? None or nbins per color
     'input_colorhists': None,
-    # Include input norm histograms ? None or (division, nfeatures)    
+    # Include input norm histograms ? None or (division, nfeatures)
     'normin_hists': None,
     # Include filter output histograms ? None or (division, nfeatures)
     'filter_hists': None,
-    # Include activation output histograms ? None or (division, nfeatures)    
+    # Include activation output histograms ? None or (division, nfeatures)
     'activ_hists': None,
     # Include output norm histograms ? None or (division, nfeatures)
     'normout_hists': None,

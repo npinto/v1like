@@ -13,7 +13,7 @@ Pinto N, DiCarlo JJ, Cox DD
 
 import scipy as sp
 
-# -- representation 
+# -- representation
 # some filter parameters
 norients = 16
 orients = [ o*sp.pi/norients for o in xrange(norients) ]
@@ -31,6 +31,8 @@ representation = {
     'max_edge': 150,
     # kernel size of the box low pass filter
     'lsum_ksize': None,
+    # how to resize the image
+    'resize_method': 'bicubic',
     },
 
 # - input local normalization
@@ -41,8 +43,6 @@ representation = {
     # magnitude threshold
     # if the vector's length is below, it doesn't get resized
     'threshold': 1.0,
-    # how to resize the image
-    'resize_method': 'bicubic',        
     },
 
 # - linear filtering
@@ -88,15 +88,15 @@ featsel = {
     # Include representation output ? True or False
     'output': True,
 
-    # Include grayscale values ? None or (height, width)    
+    # Include grayscale values ? None or (height, width)
     'input_gray': None,#(100,100),
     # Include color histograms ? None or nbins per color
-    'input_colorhists': None,#255, 
-    # Include input norm histograms ? None or (division, nfeatures)    
+    'input_colorhists': None,#255,
+    # Include input norm histograms ? None or (division, nfeatures)
     'normin_hists': None,
     # Include filter output histograms ? None or (division, nfeatures)
     'filter_hists': None,
-    # Include activation output histograms ? None or (division, nfeatures)    
+    # Include activation output histograms ? None or (division, nfeatures)
     'activ_hists': None,#(2,10000),
     # Include output norm histograms ? None or (division, nfeatures)
     'normout_hists': None,#(1,10000),
