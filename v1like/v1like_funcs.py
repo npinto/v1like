@@ -354,7 +354,11 @@ def get_image(img_fname, max_edge=None, min_edge=None,
     """
 
     # -- open image
-    img = Image.open(img_fname)#.convert("RGB")
+    try:
+        img = Image.open(img_fname)
+    except IOError, err:
+        print "ERROR with '%s':" % img_fname, err
+        raise err
 
     if max_edge is not None:
         # -- resize so that the biggest edge is max_edge (keep aspect ratio)
