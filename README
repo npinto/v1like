@@ -28,7 +28,14 @@ export V1LIKE=$PJT/src/v1like/v1like
 export SCLAS=$PJT/src/sclas
 
 # -- don't forget to install shogun
-# see e.g.: https://github.com/npinto/np-toolbox/blob/master/install_scripts/install_shogun0.9.3_Ubuntu9.10.bash
+# see e.g.:
+#
+# * for Gentoo:
+#   https://github.com/npinto/sekyfsr-gentoo-overlay
+#   https://github.com/npinto/sekyfsr-gentoo-overlay/blob/master/sci-libs/shogun/shogun-0.9.3.ebuild
+#
+# * for Ubuntu 9.10:
+#   https://github.com/npinto/np-toolbox/blob/master/install_scripts/install_shogun0.9.3_Ubuntu9.10.bash
 
 # ----------------------------
 # -- #Caltech101: get image set
